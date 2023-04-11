@@ -26,7 +26,7 @@ app.use((req, res, next) => {
 //get all logins
 app.get("/", async (req, res) => {
   try {
-    const response = await db.query("SELECT * FROM login_details");
+    const response = await db.query("SELECT * FROM users");
     res.json({
       status: "success",
       logins: response.rows,
@@ -40,7 +40,7 @@ app.get("/", async (req, res) => {
 app.get("/:id", async (req, res) => {
   try {
     const response = await db.query(
-      "SELECT login_details.id, login_details.username, login_details.email, tasks.id AS project_id, tasks.task AS project_name,tasks.date AS project_date,tasks.description AS project_description,tasks.status AS project_status FROM login_details LEFT JOIN tasks ON tasks.user_id = login_details.id WHERE login_details.id = $1;",
+      "SELECT users.id, users.username, users.email, projects.id AS project_id, projects.project_title AS project_name,projects.date AS project_date FROM users LEFT JOIN projects ON projects.user_id = users.id WHERE users.id = $1;",
       [req.params.id]
     );
     res.json({
@@ -51,14 +51,30 @@ app.get("/:id", async (req, res) => {
     console.log(error);
   }
 });
-app.get("/:id/task", async (req, res) => {
+
+//get single project
+app.get("/:id/project", async (req, res) => {
   try {
-    const response = await db.query("SELECT * FROM tasks WHERE id = $1;", [
+    const response = await db.query("SELECT * FROM projects WHERE id = $1;", [
       req.params.id,
     ]);
     res.json({
       status: "success",
       results: response.rows[0],
+    });
+  } catch (error) {
+    console.log(error);
+  }
+});
+
+//delete project
+app.delete("/:id", async (req, res) => {
+  try {
+    const response = await db.query("DELETE FROM projects WHERE id = $1 ", [
+      req.params.id,
+    ]);
+    res.json({
+      status: "success",
     });
   } catch (error) {
     console.log(error);
@@ -72,7 +88,7 @@ app.post("/", async (req, res) => {
   const hashedPassword = await bcrypt.hash(password, 10);
   try {
     const response = await db.query(
-      "INSERT INTO login_details (username,password,email) values ($1,$2,$3) returning *",
+      "INSERT INTO users (username,password,email) values ($1,$2,$3) returning *",
       [req.body.username, hashedPassword, req.body.email]
     );
     res.json({
@@ -87,42 +103,13 @@ app.post("/", async (req, res) => {
   }
 });
 
-//update login
-app.put("/:id", async (req, res) => {
-  try {
-    const response = await db.query(
-      "UPDATE login_details SET username=$1,password=$2,email=$3 WHERE id=$4 returning *",
-      [req.body.username, req.body.password, req.body.email, req.params.id]
-    );
-    res.json({
-      status: "success",
-      logins: response.rows[0],
-    });
-  } catch (error) {
-    console.log(error);
-  }
-});
-
-//delete login
-app.delete("/:id", async (req, res) => {
-  try {
-    await db.query("DELETE FROM tasks WHERE id = $1", [req.params.id]);
-    res.json({
-      status: "success",
-    });
-  } catch (error) {
-    console.log(error);
-  }
-});
-
 //create login jwt token for client after authentication
 app.post("/signIn", async (req, res) => {
   try {
     const { email, password } = req.body;
-    const user = await db.query(
-      "SELECT * FROM login_details WHERE email = $1",
-      [email]
-    );
+    const user = await db.query("SELECT * FROM users WHERE email = $1", [
+      email,
+    ]);
 
     //return message if user doesnt exist
     if (user.rows.length === 0) {
@@ -159,17 +146,17 @@ app.post("/signIn", async (req, res) => {
 });
 
 //register project
-app.post("/task", async (req, res) => {
+app.post("/project", async (req, res) => {
   try {
     console.log(req.body);
-    const { user_id, task, date, description, status } = req.body;
-    const tasks = await db.query(
-      "INSERT INTO tasks (user_id,task,date,description,status) values ($1,$2,$3,$4,$5) returning *",
-      [user_id, task, date, description, status]
+    const { user_id, project_title, date } = req.body;
+    const project = await db.query(
+      "INSERT INTO projects (user_id,project_title,date) values ($1,$2,$3) returning *",
+      [user_id, project_title, date]
     );
     res.json({
       status: "success",
-      results: tasks.rows[0],
+      results: project.rows[0],
     });
   } catch (error) {
     console.log(error);
@@ -180,15 +167,8 @@ app.post("/task", async (req, res) => {
 app.put("/:id/update", async (req, res) => {
   try {
     const response = await db.query(
-      "UPDATE tasks SET task=$1,status=$2,date=$3,description=$4, user_id = $5 WHERE id=$6 returning *",
-      [
-        req.body.task,
-        req.body.status,
-        req.body.date,
-        req.body.description,
-        req.body.user_id,
-        req.params.id,
-      ]
+      "UPDATE projects SET project_title=$1,date=$2, user_id = $3 WHERE id=$4 returning *",
+      [req.body.task, req.body.date, req.body.user_id, req.params.id]
     );
     res.json({
       status: "success",

@@ -6,8 +6,15 @@ import NavBar from "../components/NavBar";
 import { UserContext } from "../context/UserContext";
 
 const UserProjectsDetails = (props) => {
-  const { user, setUser, userProjects, setUserProjects } =
-    useContext(UserContext);
+  const {
+    user,
+    setUser,
+    userProjects,
+    setUserProjects,
+    deleteIndiactor,
+    setDeleteIndicator,
+  } = useContext(UserContext);
+
   let navigate = useNavigate();
 
   useEffect(() => {
@@ -86,12 +93,7 @@ const UserProjectsDetails = (props) => {
                         <h3>{project.project_name} </h3>
                         <div>{project.project_date.split("T")[0]}</div>
                       </div>
-                      <div className="card-text">
-                        {project.project_description}
-                      </div>
-                      <div className="card-text">
-                        Status: {project.project_status}
-                      </div>
+
                       <div className="d-flex justify-content-between mt-2">
                         <button
                           className="btn btn-danger"

@@ -24,7 +24,7 @@ const AddProject = () => {
         status,
       });
 
-      navigate("/signIn");
+      navigate("/home");
     } catch (err) {
       console.log(err);
     }
