@@ -15,8 +15,8 @@ CREATE TABLE projects (
 
 CREATE TABLE tasks(
     id SERIAL PRIMARY KEY,
-    projects_id INTEGER NOT NULL REFERENCES projects(id),
-    date DATE NOT NULL,
+    project_id INTEGER NOT NULL REFERENCES projects(id),
+    task VARCHAR(255) NOT NULL,
     description TEXT NOT NULL,
     status VARCHAR(20) NOT NULL
 );

@@ -3,7 +3,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faHome } from "@fortawesome/free-solid-svg-icons";
 import "../NavBar.css";
 
-function NavBar({ userProjects }) {
+function NavBarAlt({ userProjects }) {
   const handleLogout = () => {
     localStorage.removeItem("token");
     window.location.href = "/";
@@ -17,14 +17,9 @@ function NavBar({ userProjects }) {
             <FontAwesomeIcon icon={faHome} />
           </a>
         </li>
-        <li>
-          <a href="" onClick={handleLogout}>
-            Log out
-          </a>
-        </li>
       </ul>
     </nav>
   );
 }
 
-export default NavBar;
+export default NavBarAlt;

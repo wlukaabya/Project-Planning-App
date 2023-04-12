@@ -163,8 +163,8 @@ app.post("/project", async (req, res) => {
   }
 });
 
-//update task
-app.put("/:id/update", async (req, res) => {
+//update project
+app.put("/:id/project", async (req, res) => {
   try {
     const response = await db.query(
       "UPDATE projects SET project_title=$1,date=$2, user_id = $3 WHERE id=$4 returning *",
@@ -173,6 +173,43 @@ app.put("/:id/update", async (req, res) => {
     res.json({
       status: "success",
       logins: response.rows[0],
+    });
+  } catch (error) {
+    console.log(error);
+  }
+});
+
+//add tasks
+app.post("/task", async (req, res) => {
+  try {
+    const response = await db.query(
+      "INSERT INTO tasks (project_id,task,description,status) VALUES ($1,$2,$3,$4) RETURNING *",
+      [
+        req.body.project_id,
+        req.body.task,
+        req.body.description,
+        req.body.status,
+      ]
+    );
+    res.json({
+      status: "success",
+      results: response.rows[0],
+    });
+  } catch (error) {
+    console.log(error);
+  }
+});
+
+//get tasks
+app.get("/:id/tasks", async (req, res) => {
+  try {
+    const response = await db.query(
+      "SELECT * FROM tasks WHERE project_id = $1;",
+      [req.params.id]
+    );
+    res.json({
+      status: "success",
+      tasks: response.rows,
     });
   } catch (error) {
     console.log(error);

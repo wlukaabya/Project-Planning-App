@@ -6,6 +6,7 @@ import EditProject from "./routes/EditProject";
 import AddProject from "./routes/AddProject";
 import SignIn from "./routes/SignIn";
 import { UserContextProvider } from "./context/UserContext";
+import Tasks from "./routes/Tasks";
 
 function App() {
   return (
@@ -18,6 +19,7 @@ function App() {
             <Route path="/home" element={<UserProjectsDetails />} />
             <Route path="/:id/update" element={<EditProject />} />
             <Route path="/:id/add" element={<AddProject />} />
+            <Route path="/:id/tasks" element={<Tasks />} />
           </Routes>
         </BrowserRouter>
       </div>

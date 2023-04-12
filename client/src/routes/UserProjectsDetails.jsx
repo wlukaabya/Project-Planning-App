@@ -53,9 +53,15 @@ const UserProjectsDetails = (props) => {
     navigate(`/${userProjects[0].id}/add`);
   };
 
-  const deleteProject = async (id) => {
+  const deleteProject = async (e, id) => {
+    e.stopPropagation();
     const result = await UserFinder.delete(`/${id}`);
     window.location.reload();
+  };
+
+  const handleEdit = (e, id) => {
+    e.stopPropagation();
+    navigate(`/${id}/update`);
   };
 
   return userProjects.length > 0 ? (
@@ -87,7 +93,10 @@ const UserProjectsDetails = (props) => {
             <div className="row">
               {userProjects.map((project) => (
                 <div className="col-lg-6 bg-light" key={project.project_id}>
-                  <div className="card mb-4 bg-success">
+                  <div
+                    className="card mb-4 bg-success"
+                    onClick={() => navigate(`/${project.project_id}/tasks`)}
+                  >
                     <div className="card-body">
                       <div className="card-title d-flex justify-content-between">
                         <h3>{project.project_name} </h3>
@@ -97,15 +106,13 @@ const UserProjectsDetails = (props) => {
                       <div className="d-flex justify-content-between mt-2">
                         <button
                           className="btn btn-danger"
-                          onClick={() => deleteProject(project.project_id)}
+                          onClick={(e) => deleteProject(e, project.project_id)}
                         >
                           Delete
                         </button>{" "}
                         <button
                           className="btn btn-warning"
-                          onClick={() =>
-                            navigate(`/${project.project_id}/update`)
-                          }
+                          onClick={(e) => handleEdit(e, project.project_id)}
                         >
                           Edit Project
                         </button>{" "}

@@ -9,19 +9,17 @@ const EditProject = () => {
   const params = useParams();
   const navigate = useNavigate();
   const { user } = useContext(UserContext);
-  const [task, setTask] = useState("");
+  const [title, setTitle] = useState("");
   const [status, setStatus] = useState("");
   const [date, setDate] = useState("");
   const [description, setDescription] = useState("");
 
   const fetchProject = async () => {
     try {
-      const response = await UserFinder.get(`/${params.id}/task`);
+      const response = await UserFinder.get(`/${params.id}/project`);
       const project = response.data.results;
-      setTask(project.task);
-      setStatus(project.status);
+      setTitle(project.project_title);
       setDate(project.date.split("T")[0]);
-      setDescription(project.description);
     } catch (error) {
       console.log(error);
     }
@@ -36,11 +34,9 @@ const EditProject = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const result = await UserFinder.put(`/${params.id}/update`, {
-        task,
-        status,
+      const result = await UserFinder.put(`/${params.id}/project`, {
+        project_title: title,
         date,
-        description,
         user_id: user.userId,
       });
       console.log(result);
@@ -50,7 +46,7 @@ const EditProject = () => {
     navigate("/home");
   };
 
-  return (
+  return user ? (
     <div>
       <h1 className="text-center mb-3">Update Project</h1>
       <form onSubmit={handleSubmit}>
@@ -58,8 +54,8 @@ const EditProject = () => {
           <label htmlFor="title">Title</label>
           <input
             type="text"
-            value={task}
-            onChange={(e) => setTask(e.target.value)}
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
             className="form-control"
             id="title"
           />
@@ -74,35 +70,14 @@ const EditProject = () => {
             id="date"
           />
         </div>
-        <div className="form-group">
-          <label htmlFor="description">Description</label>
-          <textarea
-            type="text"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            className="form-control"
-            id="description"
-          />
-        </div>
-        <div className="form-group">
-          <label htmlFor="status">Status</label>
-          <select
-            value={status}
-            onChange={(e) => setStatus(e.target.value)}
-            className="form-control"
-            id="status"
-          >
-            <option defaultValue>Select project status</option>
-            <option value="Todo">Todo</option>
-            <option value="In progress">In progress</option>
-            <option value="Done">Done</option>
-          </select>
-        </div>
+
         <button type="submit" className="btn btn-primary mt-2">
           Update Project
         </button>
       </form>
     </div>
+  ) : (
+    <div>No resource found</div>
   );
 };
 
