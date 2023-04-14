@@ -4,9 +4,11 @@ import { faEdit, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { UserContext } from "../context/UserContext";
 import { useParams } from "react-router-dom";
 import UserFinder from "../apis/UserFinder";
+import TaskEdit from "./TaskEdit";
 
 const TasksTable = (props) => {
-  const { tasks, setTasks } = useContext(UserContext);
+  const { tasks, setTasks, setSelectedTask, selectedTask } =
+    useContext(UserContext);
   const params = useParams();
 
   useEffect(() => {
@@ -20,6 +22,15 @@ const TasksTable = (props) => {
     };
     getTasks();
   }, []);
+
+  const handleDelete = async (id) => {
+    try {
+      const result = await UserFinder.delete(`/${id}/tasks`);
+      window.location.reload();
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   return tasks ? (
     <div className=" container table-responsive">
@@ -54,10 +65,16 @@ const TasksTable = (props) => {
               </td>
 
               <td>
-                <button className="btn btn-sm btn-outline-danger">
+                <button
+                  className="btn btn-sm btn-outline-danger"
+                  onClick={() => handleDelete(item.id)}
+                >
                   <FontAwesomeIcon icon={faTrash} />
                 </button>{" "}
-                <button className="btn btn-sm btn-outline-secondary">
+                <button
+                  className="btn btn-sm btn-outline-secondary"
+                  onClick={() => setSelectedTask(item)}
+                >
                   <FontAwesomeIcon icon={faEdit} />
                 </button>
               </td>
@@ -65,6 +82,7 @@ const TasksTable = (props) => {
           ))}
         </tbody>
       </table>
+      {selectedTask && <TaskEdit params={params} />}
     </div>
   ) : (
     <div>No resource found</div>

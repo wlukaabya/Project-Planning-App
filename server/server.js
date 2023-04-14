@@ -77,7 +77,9 @@ app.delete("/:id", async (req, res) => {
       status: "success",
     });
   } catch (error) {
-    console.log(error);
+    res.json({
+      message: "First clear your tasks before deleting the project!",
+    });
   }
 });
 
@@ -148,7 +150,6 @@ app.post("/signIn", async (req, res) => {
 //register project
 app.post("/project", async (req, res) => {
   try {
-    console.log(req.body);
     const { user_id, project_title, date } = req.body;
     const project = await db.query(
       "INSERT INTO projects (user_id,project_title,date) values ($1,$2,$3) returning *",
@@ -168,7 +169,7 @@ app.put("/:id/project", async (req, res) => {
   try {
     const response = await db.query(
       "UPDATE projects SET project_title=$1,date=$2, user_id = $3 WHERE id=$4 returning *",
-      [req.body.task, req.body.date, req.body.user_id, req.params.id]
+      [req.body.project_title, req.body.date, req.body.user_id, req.params.id]
     );
     res.json({
       status: "success",
@@ -210,6 +211,52 @@ app.get("/:id/tasks", async (req, res) => {
     res.json({
       status: "success",
       tasks: response.rows,
+    });
+  } catch (error) {
+    console.log(error);
+  }
+});
+
+//get task
+app.get("/:id/task", async (req, res) => {
+  try {
+    const response = await db.query("SELECT * FROM tasks WHERE id=$1", [
+      req.params.id,
+    ]);
+    res.json({
+      status: "success",
+      results: response.rows[0],
+    });
+  } catch (error) {
+    console.log(error);
+  }
+});
+
+//edit task
+app.put("/:id/tasks", async (req, res) => {
+  try {
+    const { project_id, task, status, description } = req.body;
+    const response = await db.query(
+      "UPDATE tasks SET project_id=$1,task=$2, status=$3,description = $4 WHERE id=$5 returning *",
+      [project_id, task, status, description, req.params.id]
+    );
+    res.json({
+      status: "success",
+      results: response.rows[0],
+    });
+  } catch (error) {
+    console.log(error);
+  }
+});
+
+//delete a task
+app.delete("/:id/tasks", async (req, res) => {
+  try {
+    const response = await db.query("DELETE FROM tasks WHERE id=$1", [
+      req.params.id,
+    ]);
+    res.json({
+      status: "success",
     });
   } catch (error) {
     console.log(error);

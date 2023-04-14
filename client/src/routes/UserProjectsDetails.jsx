@@ -1,4 +1,4 @@
-import React, { useEffect, useContext } from "react";
+import React, { useEffect, useContext, useState } from "react";
 import jwt_decode from "jwt-decode";
 import { useNavigate } from "react-router-dom";
 import UserFinder from "../apis/UserFinder";
@@ -14,7 +14,7 @@ const UserProjectsDetails = (props) => {
     deleteIndiactor,
     setDeleteIndicator,
   } = useContext(UserContext);
-
+  const [message, setMessage] = useState("");
   let navigate = useNavigate();
 
   useEffect(() => {
@@ -55,8 +55,16 @@ const UserProjectsDetails = (props) => {
 
   const deleteProject = async (e, id) => {
     e.stopPropagation();
-    const result = await UserFinder.delete(`/${id}`);
-    window.location.reload();
+    try {
+      const result = await UserFinder.delete(`/${id}`);
+      if (result.data.status) {
+        window.location.reload();
+      } else {
+        setMessage(result.data.message);
+      }
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   const handleEdit = (e, id) => {
@@ -122,6 +130,7 @@ const UserProjectsDetails = (props) => {
                 </div>
               ))}
             </div>
+            {<div className="text-danger">{message}</div>}
           </div>
         ) : (
           <div>No projects found</div>
