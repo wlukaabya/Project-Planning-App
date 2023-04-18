@@ -24,6 +24,9 @@ const SignUpForm = () => {
         if (login.data.logins) {
           setMessage("User succesfully registered");
           setStatus(true);
+          setEmail("");
+          setPassword("");
+          setUsername("");
         } else {
           setMessage(login.data.error);
           setStatus(false);
@@ -32,9 +35,6 @@ const SignUpForm = () => {
     } catch (error) {
       setStatus(false);
     }
-    setEmail("");
-    setPassword("");
-    setUsername("");
   };
 
   return (

@@ -98,7 +98,6 @@ app.post("/", async (req, res) => {
       logins: response.rows[0],
     });
   } catch (error) {
-    console.log(error);
     res.json({
       error: "username or mail already in use",
     });

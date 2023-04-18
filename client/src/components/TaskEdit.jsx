@@ -13,7 +13,6 @@ const TaskEdit = ({ params }) => {
   const getTasks = async () => {
     try {
       const results = await UserFinder.get(`/${id}/task`);
-      console.log(results.data.results);
       setTask(results.data.results.task);
       setStatus(results.data.results.status);
       setDescription(results.data.results.description);
@@ -40,6 +39,10 @@ const TaskEdit = ({ params }) => {
     } catch (error) {
       console.log(error);
     }
+  };
+
+  const handleCancel = () => {
+    handleTaskCancel();
   };
 
   return (
@@ -93,10 +96,13 @@ const TaskEdit = ({ params }) => {
           </div>
           <button
             type="submit"
-            className="btn btn-warning"
+            className="btn btn-warning "
             onClick={handleSubmit}
           >
             Edit Task
+          </button>
+          <button className="btn btn-danger " onClick={handleCancel}>
+            Cancel
           </button>
         </form>
       )}
