@@ -2,23 +2,26 @@ import React, { useEffect, useState } from "react";
 import UserFinder from "../apis/UserFinder";
 import { useNavigate } from "react-router-dom";
 
-const SignUpForm = () => {
+const AdminSignUpForm = () => {
   const [email, setEmail] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [sysPassword, setSysPassword] = useState("");
   const [message, setMessage] = useState("");
   const [status, setStatus] = useState(true);
+  const role = "admin";
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     try {
       if (email.length !== 0) {
-        const login = await UserFinder.post("/", {
+        const login = await UserFinder.post("/admin", {
           username,
           password,
           email,
-          role: "user",
+          role,
+          sysPassword,
         });
         console.log(login.data);
 
@@ -28,6 +31,7 @@ const SignUpForm = () => {
           setEmail("");
           setPassword("");
           setUsername("");
+          setSysPassword("");
         } else {
           setMessage(login.data.error);
           setStatus(false);
@@ -87,12 +91,25 @@ const SignUpForm = () => {
           />
         </div>
 
+        <div className="mb-3">
+          <label htmlFor="InputPassword2" className="form-label">
+            System Password
+          </label>
+          <input
+            type="password"
+            className="form-control"
+            id="InputPassword2"
+            value={sysPassword}
+            onChange={(e) => setSysPassword(e.target.value)}
+          />
+        </div>
+
         <button
           type="submit"
           className="btn btn-primary"
           onClick={handleSubmit}
         >
-          Sign Up
+          Admin Sign Up
         </button>
       </form>
       <div className={`${status ? "text-success" : "text-danger"}`}>
@@ -102,4 +119,4 @@ const SignUpForm = () => {
   );
 };
 
-export default SignUpForm;
+export default AdminSignUpForm;

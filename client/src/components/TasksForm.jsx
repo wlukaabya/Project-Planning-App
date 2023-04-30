@@ -1,12 +1,63 @@
-import React, { useContext, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { UserContext } from "../context/UserContext";
 import UserFinder from "../apis/UserFinder";
 
 const TasksForm = ({ id }) => {
-  const { tasks, setTasks, addTask } = useContext(UserContext);
+  const {
+    addTask,
+    usersList,
+    setUsersList,
+    loggedAssignee,
+    setLoggedAssignee,
+    role,
+    user,
+    setRole,
+  } = useContext(UserContext);
   const [task, setTask] = useState("");
   const [status, setStatus] = useState("");
   const [description, setDescription] = useState("");
+  const [date, setDate] = useState("");
+  const [assignee, setAssignee] = useState("");
+
+  const getUsers = async () => {
+    try {
+      if (role === "admin") {
+        const response = await UserFinder.get("/users");
+        setUsersList(response.data.results);
+      } else if (role === "user") {
+        setUsersList([
+          { id: 1, username: "Unassigned" },
+          { id: 2, username: loggedAssignee },
+        ]);
+      } else {
+        console.log("no role defined");
+        return;
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const getUser = async (id) => {
+    try {
+      const response = await UserFinder.get(`/user/${id}`);
+      setRole(response.data.results.role);
+      setLoggedAssignee(response.data.results.username);
+      console.log(response.data.results.role);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    if (user) {
+      getUser(user.userId);
+    }
+  }, [user]);
+
+  useEffect(() => {
+    getUsers();
+  }, [role, setUsersList]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -16,6 +67,8 @@ const TasksForm = ({ id }) => {
         task,
         status,
         description,
+        assignee,
+        date,
       });
       addTask(result.data.results);
     } catch (error) {
@@ -24,6 +77,9 @@ const TasksForm = ({ id }) => {
     setTask("");
     setStatus("");
     setDescription("");
+    setStatus("");
+    setDate("");
+    setAssignee("");
   };
 
   return (
@@ -73,6 +129,40 @@ const TasksForm = ({ id }) => {
               rows="3"
               placeholder="Enter description"
             ></textarea>
+          </div>
+
+          <div className="col">
+            <label htmlFor="date">Date</label>
+            <input
+              type="date"
+              value={date}
+              onChange={(e) => setDate(e.target.value)}
+              className="form-control"
+              id="date"
+            />
+          </div>
+
+          <div className="col">
+            <label htmlFor="status" className="form-label">
+              Assignee
+            </label>
+            <select
+              className="form-select form-select"
+              id="assignee"
+              value={assignee}
+              onChange={(e) => setAssignee(e.target.value)}
+            >
+              <option defaultValue={"Todo"}>Choose User</option>
+              {usersList
+                ? usersList.map((item) => {
+                    return (
+                      <option value={item.username} key={item.id}>
+                        {item.username}
+                      </option>
+                    );
+                  })
+                : ""}
+            </select>
           </div>
         </div>
         <button

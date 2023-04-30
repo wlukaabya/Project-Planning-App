@@ -3,10 +3,13 @@ import React, { createContext, useState } from "react";
 export const UserContext = createContext();
 
 export const UserContextProvider = (props) => {
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState({});
+  const [role, setRole] = useState("");
   const [userProjects, setUserProjects] = useState([]);
   const [tasks, setTasks] = useState([]);
   const [selectedTask, setSelectedTask] = useState(null);
+  const [usersList, setUsersList] = useState([]);
+  const [loggedAssignee, setLoggedAssignee] = useState("");
 
   const addTask = (task) => {
     setTasks([...tasks, task]);
@@ -38,6 +41,12 @@ export const UserContextProvider = (props) => {
         handleTaskCancel,
         selectedTask,
         setSelectedTask,
+        role,
+        setRole,
+        usersList,
+        setUsersList,
+        loggedAssignee,
+        setLoggedAssignee,
       }}
     >
       {props.children}

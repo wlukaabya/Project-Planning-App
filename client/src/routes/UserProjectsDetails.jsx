@@ -34,7 +34,8 @@ const UserProjectsDetails = (props) => {
 
   const getUserProjects = async () => {
     try {
-      const response = await UserFinder.get(`/${user.userId}`);
+      const response = await UserFinder.get("/project");
+      //const response = await UserFinder.get(`/${user.userId}`);
       setUserProjects(response.data.results);
     } catch (error) {
       console.log(error);

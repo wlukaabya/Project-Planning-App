@@ -68,8 +68,13 @@ const SignInForm = () => {
               >
                 Sign In
               </button>
+            </div>
+            <div className="d-flex justify-content-between mt-3">
               <a href="/signup" className="link-primary">
-                Sign Up
+                User signup
+              </a>
+              <a href="/AdminSignup" className="link-primary">
+                Admin signup
               </a>
             </div>
           </form>

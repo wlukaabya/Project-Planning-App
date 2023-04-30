@@ -36,13 +36,25 @@ app.get("/", async (req, res) => {
   }
 });
 
-//get a single login
-app.get("/:id", async (req, res) => {
+//get single user
+app.get("/user/:id", async (req, res) => {
   try {
-    const response = await db.query(
-      "SELECT users.id, users.username, users.email, projects.id AS project_id, projects.project_title AS project_name,projects.date AS project_date FROM users LEFT JOIN projects ON projects.user_id = users.id WHERE users.id = $1;",
-      [req.params.id]
-    );
+    const response = await db.query("SELECT * FROM users WHERE id=$1", [
+      req.params.id,
+    ]);
+    res.json({
+      status: "success",
+      results: response.rows[0],
+    });
+  } catch (error) {
+    console.log("awaiting user");
+  }
+});
+
+//get users whose role is user
+app.get("/users", async (req, res) => {
+  try {
+    const response = await db.query("SELECT * FROM users WHERE role='user'");
     res.json({
       status: "success",
       results: response.rows,
@@ -51,6 +63,22 @@ app.get("/:id", async (req, res) => {
     console.log(error);
   }
 });
+
+//get a single login
+// app.get("/:id", async (req, res) => {
+//   try {
+//     const response = await db.query(
+//       "SELECT users.id, users.username, users.email,users.role, projects.id AS project_id, projects.project_title AS project_name,projects.date AS project_date FROM users LEFT JOIN projects ON projects.user_id = users.id WHERE users.id = $1;",
+//       [req.params.id]
+//     );
+//     res.json({
+//       status: "success",
+//       results: response.rows,
+//     });
+//   } catch (error) {
+//     console.log(error);
+//   }
+// });
 
 //get single project
 app.get("/:id/project", async (req, res) => {
@@ -64,6 +92,35 @@ app.get("/:id/project", async (req, res) => {
     });
   } catch (error) {
     console.log(error);
+  }
+});
+
+//get projects
+app.get("/project", async (req, res) => {
+  try {
+    const response = await db.query("SELECT * FROM projects");
+    res.json({
+      status: "success",
+      results: response.rows,
+    });
+  } catch (error) {
+    console.log(error);
+  }
+});
+
+//get assigned projects
+app.get("/projects/:assignee", async (req, res) => {
+  try {
+    const response = await db.query(
+      "SELECT DISTINCT projects.* FROM projects JOIN tasks ON tasks.project_id = projects.id WHERE tasks.assignee = $1;",
+      [req.params.assignee]
+    );
+    res.json({
+      status: "success",
+      results: response.rows,
+    });
+  } catch (error) {
+    console.log("awaiting assignee data");
   }
 });
 
@@ -83,21 +140,45 @@ app.delete("/:id", async (req, res) => {
   }
 });
 
-//create login details
+//create user login details
 app.post("/", async (req, res) => {
   const { password } = req.body;
   //hash the password using bcrypt
   const hashedPassword = await bcrypt.hash(password, 10);
   try {
     const response = await db.query(
-      "INSERT INTO users (username,password,email) values ($1,$2,$3) returning *",
-      [req.body.username, hashedPassword, req.body.email]
+      "INSERT INTO users (username,password,email,role) values ($1,$2,$3,$4) returning *",
+      [req.body.username, hashedPassword, req.body.email, req.body.role]
     );
     res.json({
       status: "success",
       logins: response.rows[0],
     });
   } catch (error) {
+    res.json({
+      error: "username or mail already in use",
+    });
+  }
+});
+
+//Create Admin Login details
+app.post("/admin", async (req, res) => {
+  const { password } = req.body;
+  //hash the password using bcrypt
+  const hashedPassword = await bcrypt.hash(password, 10);
+  try {
+    if (req.body.sysPassword === process.env.SYS_PWD) {
+      const response = await db.query(
+        "INSERT INTO users (username,password,email,role) values ($1,$2,$3,$4) returning *",
+        [req.body.username, hashedPassword, req.body.email, req.body.role]
+      );
+      res.json({
+        status: "success",
+        logins: response.rows[0],
+      });
+    }
+  } catch (error) {
+    console.log(error);
     res.json({
       error: "username or mail already in use",
     });
@@ -149,10 +230,10 @@ app.post("/signIn", async (req, res) => {
 //register project
 app.post("/project", async (req, res) => {
   try {
-    const { user_id, project_title, date } = req.body;
+    const { project_title, date } = req.body;
     const project = await db.query(
-      "INSERT INTO projects (user_id,project_title,date) values ($1,$2,$3) returning *",
-      [user_id, project_title, date]
+      "INSERT INTO projects (project_title,date) values ($1,$2) returning *",
+      [project_title, date]
     );
     res.json({
       status: "success",
@@ -167,8 +248,8 @@ app.post("/project", async (req, res) => {
 app.put("/:id/project", async (req, res) => {
   try {
     const response = await db.query(
-      "UPDATE projects SET project_title=$1,date=$2, user_id = $3 WHERE id=$4 returning *",
-      [req.body.project_title, req.body.date, req.body.user_id, req.params.id]
+      "UPDATE projects SET project_title=$1,date=$2 WHERE id=$3 returning *",
+      [req.body.project_title, req.body.date, req.params.id]
     );
     res.json({
       status: "success",
@@ -183,12 +264,14 @@ app.put("/:id/project", async (req, res) => {
 app.post("/task", async (req, res) => {
   try {
     const response = await db.query(
-      "INSERT INTO tasks (project_id,task,description,status) VALUES ($1,$2,$3,$4) RETURNING *",
+      "INSERT INTO tasks (project_id,task,description,status,date,assignee) VALUES ($1,$2,$3,$4,$5,$6) RETURNING *",
       [
         req.body.project_id,
         req.body.task,
         req.body.description,
         req.body.status,
+        req.body.date,
+        req.body.assignee,
       ]
     );
     res.json({
@@ -234,10 +317,10 @@ app.get("/:id/task", async (req, res) => {
 //edit task
 app.put("/:id/tasks", async (req, res) => {
   try {
-    const { project_id, task, status, description } = req.body;
+    const { project_id, task, status, description, date, assignee } = req.body;
     const response = await db.query(
-      "UPDATE tasks SET project_id=$1,task=$2, status=$3,description = $4 WHERE id=$5 returning *",
-      [project_id, task, status, description, req.params.id]
+      "UPDATE tasks SET project_id=$1,task=$2, status=$3,description = $4, date=$5,assignee=$6 WHERE id=$7 returning *",
+      [project_id, task, status, description, date, assignee, req.params.id]
     );
     res.json({
       status: "success",

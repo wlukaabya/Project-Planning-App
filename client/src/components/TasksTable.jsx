@@ -41,6 +41,8 @@ const TasksTable = (props) => {
             <th>Title</th>
             <th>Description</th>
             <th>Status</th>
+            <th>Assignee</th>
+            <th>Date</th>
             <th></th>
           </tr>
         </thead>
@@ -63,6 +65,8 @@ const TasksTable = (props) => {
                   {item.status}
                 </span>
               </td>
+              <td>{item.assignee}</td>
+              <td>{item.date.split("T")[0]}</td>
 
               <td>
                 <button

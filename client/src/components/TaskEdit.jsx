@@ -3,11 +3,13 @@ import { UserContext } from "../context/UserContext";
 import UserFinder from "../apis/UserFinder";
 
 const TaskEdit = ({ params }) => {
-  const { selectedTask, handleTaskUpdate, handleTaskCancel } =
+  const { selectedTask, handleTaskUpdate, handleTaskCancel, usersList } =
     useContext(UserContext);
   const [task, setTask] = useState("");
   const [status, setStatus] = useState("");
   const [description, setDescription] = useState("");
+  const [date, setDate] = useState("");
+  const [assignee, setAssignee] = useState("");
   let id = selectedTask.id;
 
   const getTasks = async () => {
@@ -16,6 +18,8 @@ const TaskEdit = ({ params }) => {
       setTask(results.data.results.task);
       setStatus(results.data.results.status);
       setDescription(results.data.results.description);
+      setDate(results.data.results.date.split("T")[0]);
+      setAssignee(results.data.results.assignee);
     } catch (error) {
       console.log(error);
     }
@@ -33,6 +37,8 @@ const TaskEdit = ({ params }) => {
         task,
         status,
         description,
+        date,
+        assignee,
       });
       handleTaskUpdate(response.data.results);
       handleTaskCancel();
@@ -92,6 +98,40 @@ const TaskEdit = ({ params }) => {
                 rows="3"
                 placeholder="Enter description"
               ></textarea>
+            </div>
+
+            <div className="col">
+              <label htmlFor="date">Date</label>
+              <input
+                type="date"
+                value={date}
+                onChange={(e) => setDate(e.target.value)}
+                className="form-control"
+                id="date"
+              />
+            </div>
+
+            <div className="col">
+              <label htmlFor="status" className="form-label">
+                Assignee
+              </label>
+              <select
+                className="form-select form-select"
+                id="assignee"
+                value={assignee}
+                onChange={(e) => setAssignee(e.target.value)}
+              >
+                <option defaultValue={"Todo"}>Choose User</option>
+                {usersList
+                  ? usersList.map((item) => {
+                      return (
+                        <option value={item.username} key={item.id}>
+                          {item.username}
+                        </option>
+                      );
+                    })
+                  : ""}
+              </select>
             </div>
           </div>
           <button

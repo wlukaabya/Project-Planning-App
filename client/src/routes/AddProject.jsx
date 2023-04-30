@@ -1,5 +1,5 @@
 import React, { useContext, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 import UserFinder from "../apis/UserFinder";
 import { UserContext } from "../context/UserContext";
@@ -7,16 +7,15 @@ import { UserContext } from "../context/UserContext";
 const AddProject = () => {
   const { user } = useContext(UserContext);
   let navigate = useNavigate();
-  let params = useParams();
+
   const [title, setTitle] = useState("");
   const [date, setDate] = useState("");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const user_id = params.id;
+
     try {
       const response = await UserFinder.post("/project", {
-        user_id,
         project_title: title,
         date,
       });
@@ -28,7 +27,7 @@ const AddProject = () => {
 
   return user ? (
     <div className="container ">
-      <h1 className="text-center">Add Project Portal</h1>
+      <h1 className="text-center">Add Project</h1>
       <form onSubmit={handleSubmit}>
         <div className="form-group">
           <label htmlFor="title">Title</label>

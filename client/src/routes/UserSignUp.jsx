@@ -4,7 +4,7 @@ import SignUpForm from "../components/SignUpForm";
 const UserSignUp = () => {
   return (
     <div className="container mt-2">
-      <h2>Welocme to Projects</h2>
+      <h2>Please Enter Your Details</h2>
       <SignUpForm />
     </div>
   );

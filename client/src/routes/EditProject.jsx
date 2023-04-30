@@ -37,9 +37,7 @@ const EditProject = () => {
       const result = await UserFinder.put(`/${params.id}/project`, {
         project_title: title,
         date,
-        user_id: user.userId,
       });
-      console.log(result);
     } catch (error) {
       console.log(error);
     }

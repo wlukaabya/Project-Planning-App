@@ -7,7 +7,7 @@ import jwt_decode from "jwt-decode";
 import { useNavigate, useParams } from "react-router-dom";
 
 const Tasks = () => {
-  const { user, setUser } = useContext(UserContext);
+  const { user, setUser, role } = useContext(UserContext);
   const params = useParams();
 
   const navigate = useNavigate();
@@ -29,7 +29,7 @@ const Tasks = () => {
   return user ? (
     <div>
       <NavBarAlt />
-      <TasksForm id={params.id} />
+      <TasksForm id={params.id} role={role} />
       <TasksTable />
     </div>
   ) : null;
