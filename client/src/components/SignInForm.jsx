@@ -1,15 +1,21 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import UserFinder from "../apis/UserFinder";
+import ErrorModal from "./ErrorModal";
 
 const SignInForm = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [showModal, setShowModal] = useState(false);
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!email || !password) {
+      setShowModal(true);
+      setError("Please ensure all the fields are entered");
+    }
     try {
       const response = await UserFinder.post("/signIn", {
         email,
@@ -20,9 +26,11 @@ const SignInForm = () => {
         navigate("/home");
       } else {
         setError("Invalid email or password");
+        setShowModal(true);
       }
     } catch (error) {
       setError("Invalid email or password");
+      setShowModal(true);
     }
   };
 
@@ -79,8 +87,8 @@ const SignInForm = () => {
             </div>
           </form>
         </div>
-        <div className="text-danger">{error}</div>
       </div>
+      {showModal && <ErrorModal message={error} setShowModal={setShowModal} />}
     </div>
   );
 };

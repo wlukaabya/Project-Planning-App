@@ -1,4 +1,4 @@
-import React, { useContext, useEffect } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import TasksForm from "../components/TasksForm";
 import TasksTable from "../components/TasksTable";
 import NavBarAlt from "../components/NavBarAlt";
@@ -8,6 +8,7 @@ import { useNavigate, useParams } from "react-router-dom";
 
 const Tasks = () => {
   const { user, setUser, role } = useContext(UserContext);
+  const [tokenExpiration, setTokenExpiration] = useState(null);
   const params = useParams();
 
   const navigate = useNavigate();
@@ -18,21 +19,30 @@ const Tasks = () => {
     } else {
       try {
         const decoded = jwt_decode(token);
-        const { userId, roles } = decoded;
+        const { userId, roles, exp } = decoded;
         setUser({ userId, roles });
+        setTokenExpiration(exp * 1000);
       } catch (err) {
         navigate("/");
       }
     }
   }, []);
 
-  return user ? (
+  return (
     <div>
-      <NavBarAlt />
-      <TasksForm id={params.id} role={role} />
-      <TasksTable />
+      {tokenExpiration && Date.now() > tokenExpiration ? (
+        <p>session expired</p>
+      ) : user ? (
+        <div>
+          <NavBarAlt />
+          <TasksForm id={params.id} role={role} />
+          <TasksTable />
+        </div>
+      ) : (
+        ""
+      )}
     </div>
-  ) : null;
+  );
 };
 
 export default Tasks;

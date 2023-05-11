@@ -3,11 +3,16 @@ import NavBar from "./NavBar";
 import { UserContext } from "../context/UserContext";
 import { useNavigate } from "react-router-dom";
 import UserFinder from "../apis/UserFinder";
+import ConfirmModal from "./ConfirmModal";
+import ErrorModal from "./ErrorModal";
 
 const AdminPage = () => {
   const { user, role, userProjects, setUserProjects } = useContext(UserContext);
   let navigate = useNavigate();
   const [message, setMessage] = useState("");
+  const [id, setId] = useState(null);
+  const [showModal, setShowModal] = useState(false);
+  const [tasksAvailableStatus, setTasksAvailableStatus] = useState(false);
 
   const getProjects = async () => {
     try {
@@ -26,14 +31,14 @@ const AdminPage = () => {
     navigate("/add");
   };
 
-  const deleteProject = async (e, id) => {
-    e.stopPropagation();
+  const deleteProject = async (id) => {
     try {
       const result = await UserFinder.delete(`/${id}`);
       if (result.data.status) {
         window.location.reload();
       } else {
         setMessage(result.data.message);
+        setTasksAvailableStatus(true);
       }
     } catch (error) {
       console.log(error);
@@ -45,9 +50,22 @@ const AdminPage = () => {
     navigate(`/${id}/update`);
   };
 
+  const renderModal = (e, id) => {
+    e.stopPropagation();
+    setShowModal(true);
+    setId(id);
+  };
+
   return (
     <>
       <div>
+        {showModal && (
+          <ConfirmModal
+            setShowModal={setShowModal}
+            id={id}
+            deleteProject={deleteProject}
+          />
+        )}
         <NavBar />
         <div className="d-flex justify-content-between mt-3 container">
           <h3>
@@ -84,7 +102,7 @@ const AdminPage = () => {
                     <div className="d-flex justify-content-between mt-2">
                       <button
                         className="btn btn-danger"
-                        onClick={(e) => deleteProject(e, project.id)}
+                        onClick={(e) => renderModal(e, project.id)}
                       >
                         Delete
                       </button>{" "}
@@ -100,7 +118,12 @@ const AdminPage = () => {
               </div>
             ))}
           </div>
-          {<div className="text-danger">{message}</div>}
+          {tasksAvailableStatus && (
+            <ErrorModal
+              message={message}
+              setShowModal={setTasksAvailableStatus}
+            />
+          )}
         </div>
       ) : (
         <div>No projects found</div>

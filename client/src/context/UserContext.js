@@ -3,7 +3,7 @@ import React, { createContext, useState } from "react";
 export const UserContext = createContext();
 
 export const UserContextProvider = (props) => {
-  const [user, setUser] = useState({});
+  const [user, setUser] = useState(null);
   const [role, setRole] = useState("");
   const [userProjects, setUserProjects] = useState([]);
   const [tasks, setTasks] = useState([]);

@@ -13,6 +13,34 @@ const apikey = process.env.API_KEY;
 app.use(express.json());
 app.use(cors());
 
+//verify token
+const verifyUserToken = (req, res, next) => {
+  if (!req.headers.authorization) {
+    return res.status(401).send("Unauthorized request");
+  }
+  const token = req.headers["authorization"].split(" ")[1];
+  if (!token) {
+    return res.status(401).send("Access denied. No token provided.");
+  }
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    req.userId = decoded.userId;
+    req.roles = decoded.roles;
+    next();
+  } catch (err) {
+    res.status(400).send("Invalid token.");
+  }
+};
+
+//admin routes protection middleware
+const isAdmin = (req, res, next) => {
+  if (req.roles === "admin") {
+    next();
+  } else {
+    res.sendStatus(403);
+  }
+};
+
 //routes protection
 app.use((req, res, next) => {
   const key = req.get("apikey");
@@ -37,7 +65,7 @@ app.get("/", async (req, res) => {
 });
 
 //get single user
-app.get("/user/:id", async (req, res) => {
+app.get("/user/:id", verifyUserToken, async (req, res) => {
   try {
     const response = await db.query("SELECT * FROM users WHERE id=$1", [
       req.params.id,
@@ -52,7 +80,7 @@ app.get("/user/:id", async (req, res) => {
 });
 
 //get users whose role is user
-app.get("/users", async (req, res) => {
+app.get("/users", verifyUserToken, async (req, res) => {
   try {
     const response = await db.query("SELECT * FROM users WHERE role='user'");
     res.json({
@@ -64,24 +92,8 @@ app.get("/users", async (req, res) => {
   }
 });
 
-//get a single login
-// app.get("/:id", async (req, res) => {
-//   try {
-//     const response = await db.query(
-//       "SELECT users.id, users.username, users.email,users.role, projects.id AS project_id, projects.project_title AS project_name,projects.date AS project_date FROM users LEFT JOIN projects ON projects.user_id = users.id WHERE users.id = $1;",
-//       [req.params.id]
-//     );
-//     res.json({
-//       status: "success",
-//       results: response.rows,
-//     });
-//   } catch (error) {
-//     console.log(error);
-//   }
-// });
-
 //get single project
-app.get("/:id/project", async (req, res) => {
+app.get("/:id/project", verifyUserToken, async (req, res) => {
   try {
     const response = await db.query("SELECT * FROM projects WHERE id = $1;", [
       req.params.id,
@@ -96,7 +108,7 @@ app.get("/:id/project", async (req, res) => {
 });
 
 //get projects
-app.get("/project", async (req, res) => {
+app.get("/project", verifyUserToken, isAdmin, async (req, res) => {
   try {
     const response = await db.query("SELECT * FROM projects");
     res.json({
@@ -109,7 +121,7 @@ app.get("/project", async (req, res) => {
 });
 
 //get assigned projects
-app.get("/projects/:assignee", async (req, res) => {
+app.get("/projects/:assignee", verifyUserToken, async (req, res) => {
   try {
     const response = await db.query(
       "SELECT DISTINCT projects.* FROM projects JOIN tasks ON tasks.project_id = projects.id WHERE tasks.assignee = $1;",
@@ -125,7 +137,7 @@ app.get("/projects/:assignee", async (req, res) => {
 });
 
 //delete project
-app.delete("/:id", async (req, res) => {
+app.delete("/:id", verifyUserToken, isAdmin, async (req, res) => {
   try {
     const response = await db.query("DELETE FROM projects WHERE id = $1 ", [
       req.params.id,
@@ -176,9 +188,13 @@ app.post("/admin", async (req, res) => {
         status: "success",
         logins: response.rows[0],
       });
+    } else {
+      res.json({
+        error:
+          "Invalid system password: Consult your systems admin for the valid password",
+      });
     }
   } catch (error) {
-    console.log(error);
     res.json({
       error: "username or mail already in use",
     });
@@ -212,14 +228,13 @@ app.post("/signIn", async (req, res) => {
 
     //generate jwt token for client
     const token = jwt.sign(
-      { userId: user.rows[0].id },
+      { userId: user.rows[0].id, roles: user.rows[0].role },
       process.env.JWT_SECRET,
       { expiresIn: "1h" }
     );
 
     //return token to client
     res.json({
-      id: user.rows[0].id,
       token,
     });
   } catch (error) {
@@ -228,7 +243,7 @@ app.post("/signIn", async (req, res) => {
 });
 
 //register project
-app.post("/project", async (req, res) => {
+app.post("/project", verifyUserToken, isAdmin, async (req, res) => {
   try {
     const { project_title, date } = req.body;
     const project = await db.query(
@@ -245,7 +260,7 @@ app.post("/project", async (req, res) => {
 });
 
 //update project
-app.put("/:id/project", async (req, res) => {
+app.put("/:id/project", verifyUserToken, isAdmin, async (req, res) => {
   try {
     const response = await db.query(
       "UPDATE projects SET project_title=$1,date=$2 WHERE id=$3 returning *",
@@ -261,10 +276,10 @@ app.put("/:id/project", async (req, res) => {
 });
 
 //add tasks
-app.post("/task", async (req, res) => {
+app.post("/task", verifyUserToken, async (req, res) => {
   try {
     const response = await db.query(
-      "INSERT INTO tasks (project_id,task,description,status,date,assignee) VALUES ($1,$2,$3,$4,$5,$6) RETURNING *",
+      "INSERT INTO tasks (project_id,task,description,status,date,assignee,created_by) VALUES ($1,$2,$3,$4,$5,$6,$7) RETURNING *",
       [
         req.body.project_id,
         req.body.task,
@@ -272,6 +287,7 @@ app.post("/task", async (req, res) => {
         req.body.status,
         req.body.date,
         req.body.assignee,
+        req.body.created_by,
       ]
     );
     res.json({
@@ -279,12 +295,12 @@ app.post("/task", async (req, res) => {
       results: response.rows[0],
     });
   } catch (error) {
-    console.log(error);
+    res.status(401).send("Make sure all required fields are filled");
   }
 });
 
 //get tasks
-app.get("/:id/tasks", async (req, res) => {
+app.get("/:id/tasks", verifyUserToken, async (req, res) => {
   try {
     const response = await db.query(
       "SELECT * FROM tasks WHERE project_id = $1;",
@@ -300,7 +316,7 @@ app.get("/:id/tasks", async (req, res) => {
 });
 
 //get task
-app.get("/:id/task", async (req, res) => {
+app.get("/:id/task", verifyUserToken, async (req, res) => {
   try {
     const response = await db.query("SELECT * FROM tasks WHERE id=$1", [
       req.params.id,
@@ -315,8 +331,28 @@ app.get("/:id/task", async (req, res) => {
 });
 
 //edit task
-app.put("/:id/tasks", async (req, res) => {
+app.put("/:id/tasks", verifyUserToken, async (req, res) => {
   try {
+    //get user id from jwt decode
+    const userId = req.userId;
+
+    //get and confirm admin role
+    const admin = req.roles === "admin";
+
+    //find task
+    const vTask = await db.query("SELECT created_by FROM tasks WHERE id=$1", [
+      req.params.id,
+    ]);
+
+    const loggedTask = vTask.rows[0].created_by;
+
+    if (!admin && userId !== loggedTask) {
+      return res.status(403).json({
+        status: "error",
+        message: "You are not authorized to edit this task",
+      });
+    }
+
     const { project_id, task, status, description, date, assignee } = req.body;
     const response = await db.query(
       "UPDATE tasks SET project_id=$1,task=$2, status=$3,description = $4, date=$5,assignee=$6 WHERE id=$7 returning *",
@@ -332,8 +368,28 @@ app.put("/:id/tasks", async (req, res) => {
 });
 
 //delete a task
-app.delete("/:id/tasks", async (req, res) => {
+app.delete("/:id/tasks", verifyUserToken, async (req, res) => {
   try {
+    //get user id from jwt decode
+    const userId = req.userId;
+
+    //get and confirm admin role
+    const admin = req.roles === "admin";
+
+    //find task
+    const task = await db.query("SELECT created_by FROM tasks WHERE id=$1", [
+      req.params.id,
+    ]);
+
+    const loggedTask = task.rows[0].created_by;
+
+    if (!admin && userId !== loggedTask) {
+      return res.status(403).json({
+        status: "error",
+        message: "You are not authorized to delete this task",
+      });
+    }
+
     const response = await db.query("DELETE FROM tasks WHERE id=$1", [
       req.params.id,
     ]);

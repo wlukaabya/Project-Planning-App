@@ -1,14 +1,21 @@
-import React, { useContext, useEffect } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEdit, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { UserContext } from "../context/UserContext";
 import { useParams } from "react-router-dom";
 import UserFinder from "../apis/UserFinder";
 import TaskEdit from "./TaskEdit";
+import ConfirmModal from "./ConfirmModal";
+import ErrorModal from "./ErrorModal";
 
 const TasksTable = (props) => {
   const { tasks, setTasks, setSelectedTask, selectedTask } =
     useContext(UserContext);
+  const [showModal, setShowModal] = useState(false);
+  const [id, setId] = useState(null);
+  const [message, setMessage] = useState("");
+  const [unAuthStatus, setUnAuthStatus] = useState(false);
+
   const params = useParams();
 
   useEffect(() => {
@@ -28,8 +35,13 @@ const TasksTable = (props) => {
       const result = await UserFinder.delete(`/${id}/tasks`);
       window.location.reload();
     } catch (error) {
-      console.log(error);
+      setMessage(error.response.data.message);
+      setUnAuthStatus(true);
     }
+  };
+  const renderModal = (pickedId) => {
+    setShowModal(true);
+    setId(pickedId);
   };
 
   return tasks ? (
@@ -71,7 +83,7 @@ const TasksTable = (props) => {
               <td>
                 <button
                   className="btn btn-sm btn-outline-danger"
-                  onClick={() => handleDelete(item.id)}
+                  onClick={() => renderModal(item.id)}
                 >
                   <FontAwesomeIcon icon={faTrash} />
                 </button>{" "}
@@ -87,6 +99,16 @@ const TasksTable = (props) => {
         </tbody>
       </table>
       {selectedTask && <TaskEdit params={params} />}
+      {showModal && (
+        <ConfirmModal
+          id={id}
+          setShowModal={setShowModal}
+          deleteProject={handleDelete}
+        />
+      )}
+      {unAuthStatus && (
+        <ErrorModal setShowModal={setUnAuthStatus} message={message} />
+      )}
     </div>
   ) : (
     <div>No resource found</div>

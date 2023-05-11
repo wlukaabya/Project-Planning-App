@@ -18,6 +18,7 @@ const TasksForm = ({ id }) => {
   const [description, setDescription] = useState("");
   const [date, setDate] = useState("");
   const [assignee, setAssignee] = useState("");
+  const user_id = user.userId;
 
   const getUsers = async () => {
     try {
@@ -43,7 +44,6 @@ const TasksForm = ({ id }) => {
       const response = await UserFinder.get(`/user/${id}`);
       setRole(response.data.results.role);
       setLoggedAssignee(response.data.results.username);
-      console.log(response.data.results.role);
     } catch (error) {
       console.log(error);
     }
@@ -69,10 +69,11 @@ const TasksForm = ({ id }) => {
         description,
         assignee,
         date,
+        created_by: user_id,
       });
       addTask(result.data.results);
     } catch (error) {
-      console.log(error);
+      console.log("Make sure all required fields are filled");
     }
     setTask("");
     setStatus("");

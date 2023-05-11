@@ -9,6 +9,7 @@ import UserPage from "../components/UserPage";
 
 const HomePage = () => {
   const { user, setUser, role, setRole } = useContext(UserContext);
+  const [tokenExpiration, setTokenExpiration] = useState(null);
   let navigate = useNavigate();
 
   useEffect(() => {
@@ -18,8 +19,9 @@ const HomePage = () => {
     } else {
       try {
         const decoded = jwt_decode(token);
-        const { userId, roles } = decoded;
+        const { userId, roles, exp } = decoded;
         setUser({ userId, roles });
+        setTokenExpiration(exp * 1000);
       } catch (err) {
         navigate("/");
       }
@@ -27,11 +29,16 @@ const HomePage = () => {
   }, []);
 
   const getUser = async (id) => {
-    try {
-      const response = await UserFinder.get(`/user/${id}`);
-      setRole(response.data.results.role);
-    } catch (error) {
-      console.log(error);
+    const currentTime = Date.now();
+    if (tokenExpiration && currentTime > tokenExpiration) {
+      navigate("/");
+    } else {
+      try {
+        const response = await UserFinder.get(`/user/${id}`);
+        setRole(response.data.results.role);
+      } catch (error) {
+        console.log(error);
+      }
     }
   };
   useEffect(() => {

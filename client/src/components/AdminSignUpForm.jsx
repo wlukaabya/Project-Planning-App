@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
 import UserFinder from "../apis/UserFinder";
 import { useNavigate } from "react-router-dom";
+import ErrorModal from "./ErrorModal";
+import SucessModal from "./SuccessModal";
 
 const AdminSignUpForm = () => {
   const [email, setEmail] = useState("");
@@ -8,11 +10,17 @@ const AdminSignUpForm = () => {
   const [password, setPassword] = useState("");
   const [sysPassword, setSysPassword] = useState("");
   const [message, setMessage] = useState("");
-  const [status, setStatus] = useState(true);
+  const [status, setStatus] = useState(false);
+  const [showModal, setShowModal] = useState(false);
   const role = "admin";
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!username || !password || !email || !sysPassword) {
+      setMessage("Please fill in all fields");
+      setShowModal(true);
+      return;
+    }
 
     try {
       if (email.length !== 0) {
@@ -23,22 +31,23 @@ const AdminSignUpForm = () => {
           role,
           sysPassword,
         });
-        console.log(login.data);
 
         if (login.data.logins) {
           setMessage("User succesfully registered");
-          setStatus(true);
+          setStatus(false);
           setEmail("");
           setPassword("");
           setUsername("");
           setSysPassword("");
+          setStatus(true);
         } else {
           setMessage(login.data.error);
-          setStatus(false);
+          setShowModal(true);
         }
       }
     } catch (error) {
-      setStatus(false);
+      setShowModal(true);
+      setMessage("");
     }
   };
 
@@ -112,9 +121,10 @@ const AdminSignUpForm = () => {
           Admin Sign Up
         </button>
       </form>
-      <div className={`${status ? "text-success" : "text-danger"}`}>
-        {message}
-      </div>
+      {showModal && (
+        <ErrorModal setShowModal={setShowModal} message={message} />
+      )}
+      {status && <SucessModal setStatus={setStatus} message={message} />}
     </div>
   );
 };
