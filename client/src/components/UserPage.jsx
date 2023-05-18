@@ -77,7 +77,7 @@ const UserPage = () => {
 
           <div className="row">
             {userProjects.map((project) => (
-              <div className="col-lg-6 bg-light" key={project.id}>
+              <div className="col-lg-6 " key={project.id}>
                 <div
                   className="card mb-4 bg-success"
                   onClick={() => navigate(`/${project.id}/tasks`)}

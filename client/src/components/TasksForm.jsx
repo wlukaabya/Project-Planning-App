@@ -153,7 +153,7 @@ const TasksForm = ({ id }) => {
               value={assignee}
               onChange={(e) => setAssignee(e.target.value)}
             >
-              <option defaultValue={"Todo"}>Choose User</option>
+              <option defaultValue={"Todo"}>Assign</option>
               {usersList
                 ? usersList.map((item) => {
                     return (

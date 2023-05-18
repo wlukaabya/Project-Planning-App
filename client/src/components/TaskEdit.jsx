@@ -1,6 +1,7 @@
 import React, { useContext, useEffect, useState } from "react";
 import { UserContext } from "../context/UserContext";
 import UserFinder from "../apis/UserFinder";
+import ErrorModal from "./ErrorModal";
 
 const TaskEdit = ({ params }) => {
   const { selectedTask, handleTaskUpdate, handleTaskCancel, usersList } =
@@ -10,6 +11,8 @@ const TaskEdit = ({ params }) => {
   const [description, setDescription] = useState("");
   const [date, setDate] = useState("");
   const [assignee, setAssignee] = useState("");
+  const [showModal, setShowModal] = useState(false);
+  const [message, setMessage] = useState("");
   let id = selectedTask.id;
 
   const getTasks = async () => {
@@ -31,6 +34,10 @@ const TaskEdit = ({ params }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!task || !description || !date || !status) {
+      setShowModal(true);
+      setMessage("Please enter values in the empty fields");
+    }
     try {
       const response = await UserFinder.put(`/${selectedTask.id}/tasks`, {
         project_id: params.id,
@@ -44,6 +51,8 @@ const TaskEdit = ({ params }) => {
       handleTaskCancel();
     } catch (error) {
       console.log(error);
+      setShowModal(true);
+      setMessage("You are not authorised to perform this action");
     }
   };
 
@@ -53,6 +62,7 @@ const TaskEdit = ({ params }) => {
 
   return (
     <div>
+      {message && <ErrorModal setShowModal={setShowModal} message={message} />}
       {selectedTask && (
         <form>
           <div className="row g-3">
