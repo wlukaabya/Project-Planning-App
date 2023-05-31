@@ -7,10 +7,11 @@ import UserFinder from "../apis/UserFinder";
 import TaskEdit from "./TaskEdit";
 import ConfirmModal from "./ConfirmModal";
 import ErrorModal from "./ErrorModal";
+import { context } from "../context/context";
 
-const TasksTable = (props) => {
-  const { tasks, setTasks, setSelectedTask, selectedTask } =
-    useContext(UserContext);
+const TasksTable = () => {
+  const { state, dispatch } = useContext(context);
+  const [selectedTask, setSelectedTask] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [id, setId] = useState(null);
   const [message, setMessage] = useState("");
@@ -18,33 +19,25 @@ const TasksTable = (props) => {
 
   const params = useParams();
 
-  useEffect(() => {
-    const getTasks = async () => {
-      try {
-        const response = await UserFinder.get(`/${params.id}/tasks`);
-        setTasks(response.data.tasks);
-      } catch (error) {
-        console.log(Error);
-      }
-    };
-    getTasks();
-  }, []);
-
   const handleDelete = async (id) => {
     try {
       const result = await UserFinder.delete(`/${id}/tasks`);
-      window.location.reload();
+      dispatch({
+        type: "DELETE_TASK",
+        id,
+      });
     } catch (error) {
       setMessage(error.response.data.message);
       setUnAuthStatus(true);
     }
   };
+
   const renderModal = (pickedId) => {
     setShowModal(true);
     setId(pickedId);
   };
 
-  return tasks ? (
+  return state.tasks ? (
     <div className=" container table-responsive">
       <table className="table align-middle">
         <thead>
@@ -59,7 +52,7 @@ const TasksTable = (props) => {
           </tr>
         </thead>
         <tbody>
-          {tasks.map((item) => (
+          {state.tasks.map((item) => (
             <tr key={item.id}>
               <td>{item.id}</td>
               <td>{item.task}</td>
@@ -98,7 +91,13 @@ const TasksTable = (props) => {
           ))}
         </tbody>
       </table>
-      {selectedTask && <TaskEdit params={params} />}
+      {selectedTask && (
+        <TaskEdit
+          params={params}
+          selectedTask={selectedTask}
+          setSelectedTask={setSelectedTask}
+        />
+      )}
       {showModal && (
         <ConfirmModal
           id={id}

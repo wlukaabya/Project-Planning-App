@@ -4,11 +4,12 @@ import { useNavigate, useParams } from "react-router-dom";
 import UserFinder from "../apis/UserFinder";
 import { useContext } from "react";
 import { UserContext } from "../context/UserContext";
+import { context } from "../context/context";
 
 const EditProject = () => {
   const params = useParams();
   const navigate = useNavigate();
-  const { user } = useContext(UserContext);
+  const { state, dispatch } = useContext(context);
   const [title, setTitle] = useState("");
   const [status, setStatus] = useState("");
   const [date, setDate] = useState("");
@@ -26,10 +27,10 @@ const EditProject = () => {
   };
 
   useEffect(() => {
-    if (user) {
+    if (state.user) {
       fetchProject();
     }
-  }, [user]);
+  }, [state.user]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -38,13 +39,18 @@ const EditProject = () => {
         project_title: title,
         date,
       });
+
+      dispatch({
+        type: "EDIT_PROJECT",
+        payload: { data: result.data.logins },
+      });
     } catch (error) {
       console.log(error);
     }
     navigate("/home");
   };
 
-  return user ? (
+  return state.user ? (
     <div>
       <h1 className="text-center mb-3">Update Project</h1>
       <form onSubmit={handleSubmit}>

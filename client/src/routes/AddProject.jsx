@@ -2,10 +2,11 @@ import React, { useContext, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import UserFinder from "../apis/UserFinder";
-import { UserContext } from "../context/UserContext";
+
+import { context } from "../context/context";
 
 const AddProject = () => {
-  const { user } = useContext(UserContext);
+  const { state, dispatch } = useContext(context);
   let navigate = useNavigate();
 
   const [title, setTitle] = useState("");
@@ -19,13 +20,18 @@ const AddProject = () => {
         project_title: title,
         date,
       });
+
+      dispatch({
+        type: "ADD_PROJECT",
+        data: response.data.results,
+      });
+
       navigate("/home");
     } catch (err) {
       console.log(err);
     }
   };
-
-  return user ? (
+  return state.user ? (
     <div className="container ">
       <h1 className="text-center">Add Project</h1>
       <form onSubmit={handleSubmit}>

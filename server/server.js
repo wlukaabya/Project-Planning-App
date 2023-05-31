@@ -228,7 +228,11 @@ app.post("/signIn", async (req, res) => {
 
     //generate jwt token for client
     const token = jwt.sign(
-      { userId: user.rows[0].id, roles: user.rows[0].role },
+      {
+        userId: user.rows[0].id,
+        username: user.rows[0].username,
+        roles: user.rows[0].role,
+      },
       process.env.JWT_SECRET,
       { expiresIn: "1h" }
     );

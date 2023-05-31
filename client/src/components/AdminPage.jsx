@@ -1,13 +1,14 @@
 import React, { useContext, useEffect, useState } from "react";
 import NavBar from "./NavBar";
-import { UserContext } from "../context/UserContext";
 import { useNavigate } from "react-router-dom";
 import UserFinder from "../apis/UserFinder";
 import ConfirmModal from "./ConfirmModal";
 import ErrorModal from "./ErrorModal";
+import { context } from "../context/context";
 
 const AdminPage = () => {
-  const { user, role, userProjects, setUserProjects } = useContext(UserContext);
+  const { state, dispatch } = useContext(context);
+
   let navigate = useNavigate();
   const [message, setMessage] = useState("");
   const [id, setId] = useState(null);
@@ -15,16 +16,43 @@ const AdminPage = () => {
   const [tasksAvailableStatus, setTasksAvailableStatus] = useState(false);
 
   const getProjects = async () => {
+    dispatch({
+      type: "LOAD_DATA",
+      data: true,
+    });
     try {
-      const projects = await UserFinder.get("/project");
-      setUserProjects(projects.data.results);
+      if (state.loading === true) {
+        const projects = await UserFinder.get("/project");
+
+        dispatch({
+          type: "LOAD_PROJECTS",
+          data: projects.data.results,
+        });
+        dispatch({
+          type: "LOAD_DATA",
+          data: false,
+        });
+      }
     } catch (error) {
       console.log(error);
+      dispatch({
+        type: "LOAD_DATA",
+        data: false,
+      });
     }
   };
+
   useEffect(() => {
-    getProjects();
-  }, []);
+    if (state.projects.length === 0) {
+      getProjects();
+    }
+    if (state.tasks.length !== 0) {
+      dispatch({
+        type: "LOAD_TASKS",
+        data: [],
+      });
+    }
+  }, [state.loading, state.projects]);
 
   const handleProjects = (e) => {
     e.preventDefault();
@@ -35,7 +63,10 @@ const AdminPage = () => {
     try {
       const result = await UserFinder.delete(`/${id}`);
       if (result.data.status) {
-        window.location.reload();
+        dispatch({
+          type: "DELETE_PROJECT",
+          id: id,
+        });
       } else {
         setMessage(result.data.message);
         setTasksAvailableStatus(true);
@@ -80,14 +111,14 @@ const AdminPage = () => {
         </div>
       </div>
 
-      {userProjects ? (
+      {state.projects.length ? (
         <div className="container">
           <div className=" mb-2">
             <h1 className="text-info">Project List</h1>
           </div>
 
           <div className="row">
-            {userProjects.map((project) => (
+            {state.projects.map((project) => (
               <div className="col-lg-6 " key={project.id}>
                 <div
                   className="card mb-4 bg-success"

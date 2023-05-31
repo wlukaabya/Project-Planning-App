@@ -2,10 +2,11 @@ import React, { useContext, useEffect, useState } from "react";
 import { UserContext } from "../context/UserContext";
 import UserFinder from "../apis/UserFinder";
 import ErrorModal from "./ErrorModal";
+import { context } from "../context/context";
 
-const TaskEdit = ({ params }) => {
-  const { selectedTask, handleTaskUpdate, handleTaskCancel, usersList } =
-    useContext(UserContext);
+const TaskEdit = ({ params, selectedTask, setSelectedTask }) => {
+  const { state, dispatch } = useContext(context);
+
   const [task, setTask] = useState("");
   const [status, setStatus] = useState("");
   const [description, setDescription] = useState("");
@@ -47,8 +48,11 @@ const TaskEdit = ({ params }) => {
         date,
         assignee,
       });
-      handleTaskUpdate(response.data.results);
-      handleTaskCancel();
+      dispatch({
+        type: "EDIT_TASK",
+        data: response.data.results,
+      });
+      setSelectedTask(null);
     } catch (error) {
       console.log(error);
       setShowModal(true);
@@ -57,7 +61,7 @@ const TaskEdit = ({ params }) => {
   };
 
   const handleCancel = () => {
-    handleTaskCancel();
+    setSelectedTask(null);
   };
 
   return (
@@ -132,8 +136,8 @@ const TaskEdit = ({ params }) => {
                 onChange={(e) => setAssignee(e.target.value)}
               >
                 <option defaultValue={"Todo"}>Choose User</option>
-                {usersList
-                  ? usersList.map((item) => {
+                {state.users
+                  ? state.users.map((item) => {
                       return (
                         <option value={item.username} key={item.id}>
                           {item.username}

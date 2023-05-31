@@ -1,63 +1,71 @@
 import React, { useContext, useEffect, useState } from "react";
 import { UserContext } from "../context/UserContext";
 import UserFinder from "../apis/UserFinder";
+import { context } from "../context/context";
 
-const TasksForm = ({ id }) => {
-  const {
-    addTask,
-    usersList,
-    setUsersList,
-    loggedAssignee,
-    setLoggedAssignee,
-    role,
-    user,
-    setRole,
-  } = useContext(UserContext);
+const TasksForm = ({ id, role }) => {
+  const { state, dispatch } = useContext(context);
+
   const [task, setTask] = useState("");
   const [status, setStatus] = useState("");
   const [description, setDescription] = useState("");
   const [date, setDate] = useState("");
   const [assignee, setAssignee] = useState("");
-  const user_id = user.userId;
+
+  const user_id = state.user.userId;
 
   const getUsers = async () => {
+    dispatch({
+      type: "LOAD_DATA",
+      data: true,
+    });
     try {
-      if (role === "admin") {
+      if (state.user.roles === "admin" && state.loading === true) {
         const response = await UserFinder.get("/users");
-        setUsersList(response.data.results);
-      } else if (role === "user") {
-        setUsersList([
-          { id: 1, username: "Unassigned" },
-          { id: 2, username: loggedAssignee },
-        ]);
+        //setUsersList(response.data.results);
+        dispatch({
+          type: "USERS_LIST",
+          data: response.data.results,
+        });
+
+        dispatch({
+          type: "LOAD_DATA",
+          data: false,
+        });
+      } else if (state.user.roles === "user" && state.loading === true) {
+        dispatch({
+          type: "USERS_LIST",
+          data: [
+            { id: 1, username: "Unassigned" },
+            { id: 2, username: state.user.name },
+          ],
+        });
+        dispatch({
+          type: "LOAD_DATA",
+          data: false,
+        });
       } else {
         console.log("no role defined");
+        dispatch({
+          type: "LOAD_DATA",
+          data: false,
+        });
         return;
       }
     } catch (error) {
       console.log(error);
-    }
-  };
-
-  const getUser = async (id) => {
-    try {
-      const response = await UserFinder.get(`/user/${id}`);
-      setRole(response.data.results.role);
-      setLoggedAssignee(response.data.results.username);
-    } catch (error) {
-      console.log(error);
+      dispatch({
+        type: "LOAD_DATA",
+        data: false,
+      });
     }
   };
 
   useEffect(() => {
-    if (user) {
-      getUser(user.userId);
+    if (state.users.length === 0) {
+      getUsers();
     }
-  }, [user]);
-
-  useEffect(() => {
-    getUsers();
-  }, [role, setUsersList]);
+  }, [state.loading, state.users]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -71,7 +79,11 @@ const TasksForm = ({ id }) => {
         date,
         created_by: user_id,
       });
-      addTask(result.data.results);
+
+      dispatch({
+        type: "ADD_TASK",
+        data: result.data.results,
+      });
     } catch (error) {
       console.log("Make sure all required fields are filled");
     }
@@ -154,8 +166,8 @@ const TasksForm = ({ id }) => {
               onChange={(e) => setAssignee(e.target.value)}
             >
               <option defaultValue={"Todo"}>Assign</option>
-              {usersList
-                ? usersList.map((item) => {
+              {state.users.length !== 0
+                ? state.users.map((item) => {
                     return (
                       <option value={item.username} key={item.id}>
                         {item.username}

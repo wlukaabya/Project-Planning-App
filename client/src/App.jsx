@@ -8,10 +8,11 @@ import { UserContextProvider } from "./context/UserContext";
 import Tasks from "./routes/Tasks";
 import AdminSignUp from "./routes/AdminSignUp";
 import HomePage from "./routes/HomePage";
+import ContextProvider from "./context/context";
 
 function App() {
   return (
-    <UserContextProvider>
+    <ContextProvider>
       <div>
         <BrowserRouter>
           <Routes>
@@ -25,7 +26,7 @@ function App() {
           </Routes>
         </BrowserRouter>
       </div>
-    </UserContextProvider>
+    </ContextProvider>
   );
 }
 
