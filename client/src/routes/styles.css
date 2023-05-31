@@ -1,0 +1,30 @@
+.tasks_content {
+  display: flex;
+  flex-direction: row;
+}
+
+.tasks_form {
+  width: 20%;
+  margin-left: 40px;
+  background-color: antiquewhite;
+  padding: 15px;
+  border-radius: 5px;
+  box-shadow: 5px 10px 8px #888888;
+}
+
+.tasks_table {
+  width: 70%;
+  margin-left: 40px;
+  background-color: azure;
+  padding: 20px;
+  border-radius: 5px;
+  box-shadow: 5px 10px 8px #888888;
+}
+
+.tasks_form h4 {
+  color: rebeccapurple;
+}
+
+.tasks_table h1 {
+  color: brown;
+}

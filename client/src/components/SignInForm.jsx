@@ -35,7 +35,7 @@ const SignInForm = () => {
   };
 
   return (
-    <div className="d-flex justify-content-center">
+    <div className="d-flex justify-content-center ">
       <div className="card w-75 bg-light">
         <div className="card-body">
           <h3 className=" text-center card-title">Login</h3>

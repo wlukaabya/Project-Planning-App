@@ -1,7 +1,9 @@
 import React, { useContext, useEffect, useState } from "react";
-import { UserContext } from "../context/UserContext";
+
 import UserFinder from "../apis/UserFinder";
 import { context } from "../context/context";
+import "../routes/styles.css";
+import ErrorModal from "./ErrorModal";
 
 const TasksForm = ({ id, role }) => {
   const { state, dispatch } = useContext(context);
@@ -11,8 +13,10 @@ const TasksForm = ({ id, role }) => {
   const [description, setDescription] = useState("");
   const [date, setDate] = useState("");
   const [assignee, setAssignee] = useState("");
+  const [showModal, setShowModal] = useState(false);
+  const [message, setMessage] = useState("");
 
-  const user_id = state.user.userId;
+  const user_id = state.user.id;
 
   const getUsers = async () => {
     dispatch({
@@ -69,6 +73,10 @@ const TasksForm = ({ id, role }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!task || !status || !description || assignee || date) {
+      setMessage("Please provide all the required fields");
+      setShowModal(true);
+    }
     try {
       const result = await UserFinder.post("/task", {
         project_id: id,
@@ -84,23 +92,28 @@ const TasksForm = ({ id, role }) => {
         type: "ADD_TASK",
         data: result.data.results,
       });
+
+      setTask("");
+      setStatus("");
+      setDescription("");
+      setStatus("");
+      setDate("");
+      setAssignee("");
+      setShowModal(false);
     } catch (error) {
-      console.log("Make sure all required fields are filled");
+      setMessage("Make sure all required fields are filled");
     }
-    setTask("");
-    setStatus("");
-    setDescription("");
-    setStatus("");
-    setDate("");
-    setAssignee("");
   };
 
   return (
-    <div className="container">
-      <h1>Tasks</h1>
+    <div className="tasks_form">
+      {showModal && (
+        <ErrorModal setShowModal={setShowModal} message={message} />
+      )}
+      <h4>Add Task</h4>
       <form>
-        <div className="row g-3">
-          <div className="col">
+        <div>
+          <div>
             <label htmlFor="title" className="form-label">
               Title
             </label>
@@ -113,7 +126,7 @@ const TasksForm = ({ id, role }) => {
               placeholder="Enter title"
             />
           </div>
-          <div className="col">
+          <div>
             <label htmlFor="status" className="form-label">
               Task status
             </label>
@@ -130,7 +143,7 @@ const TasksForm = ({ id, role }) => {
             </select>
           </div>
 
-          <div className="col">
+          <div>
             <label htmlFor="description" className="form-label">
               Description
             </label>
@@ -144,7 +157,7 @@ const TasksForm = ({ id, role }) => {
             ></textarea>
           </div>
 
-          <div className="col">
+          <div>
             <label htmlFor="date">Date</label>
             <input
               type="date"
@@ -155,7 +168,7 @@ const TasksForm = ({ id, role }) => {
             />
           </div>
 
-          <div className="col">
+          <div>
             <label htmlFor="status" className="form-label">
               Assignee
             </label>
@@ -180,7 +193,7 @@ const TasksForm = ({ id, role }) => {
         </div>
         <button
           type="submit"
-          className="btn btn-primary"
+          className="btn btn-primary mt-2"
           onClick={handleSubmit}
         >
           Add Task

@@ -1,13 +1,14 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEdit, faTrash } from "@fortawesome/free-solid-svg-icons";
-import { UserContext } from "../context/UserContext";
+
 import { useParams } from "react-router-dom";
 import UserFinder from "../apis/UserFinder";
 import TaskEdit from "./TaskEdit";
 import ConfirmModal from "./ConfirmModal";
 import ErrorModal from "./ErrorModal";
 import { context } from "../context/context";
+import "../routes/styles.css";
 
 const TasksTable = () => {
   const { state, dispatch } = useContext(context);
@@ -16,7 +17,6 @@ const TasksTable = () => {
   const [id, setId] = useState(null);
   const [message, setMessage] = useState("");
   const [unAuthStatus, setUnAuthStatus] = useState(false);
-
   const params = useParams();
 
   const handleDelete = async (id) => {
@@ -38,7 +38,8 @@ const TasksTable = () => {
   };
 
   return state.tasks ? (
-    <div className=" container table-responsive">
+    <div className=" container table-responsive tasks_table">
+      <h1>Tasks</h1>
       <table className="table align-middle">
         <thead>
           <tr>

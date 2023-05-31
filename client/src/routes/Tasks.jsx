@@ -7,6 +7,7 @@ import jwt_decode from "jwt-decode";
 import { useNavigate, useParams } from "react-router-dom";
 import { context } from "../context/context";
 import UserFinder from "../apis/UserFinder";
+import "./styles.css";
 
 const Tasks = () => {
   const { state, dispatch } = useContext(context);
@@ -98,8 +99,10 @@ const Tasks = () => {
       ) : state ? (
         <div>
           <NavBarAlt />
-          <TasksForm id={params.id} role={state.user.roles} />
-          <TasksTable />
+          <div className="tasks_content mt-3">
+            <TasksForm id={params.id} role={state.user.roles} />
+            <TasksTable />
+          </div>
         </div>
       ) : (
         ""

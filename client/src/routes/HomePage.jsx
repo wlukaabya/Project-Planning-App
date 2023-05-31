@@ -1,7 +1,7 @@
 import React, { useContext, useEffect, useState } from "react";
-//import UserPage from "../components/UserPage";
+
 import AdminPage from "../components/AdminPage";
-import { UserContext } from "../context/UserContext";
+
 import { useNavigate } from "react-router-dom";
 import jwt_decode from "jwt-decode";
 import UserPage from "../components/UserPage";
