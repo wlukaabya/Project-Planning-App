@@ -112,7 +112,7 @@ const TasksForm = ({ id, role }) => {
       )}
       <h4>Add Task</h4>
       <form>
-        <div>
+        <div className="form_fields">
           <div>
             <label htmlFor="title" className="form-label">
               Title

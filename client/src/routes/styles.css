@@ -4,6 +4,9 @@
 }
 
 .tasks_form {
+  display: flex;
+  flex-direction: column;
+  flex-wrap: wrap;
   width: 20%;
   margin-left: 40px;
   background-color: antiquewhite;
@@ -12,8 +15,32 @@
   box-shadow: 5px 10px 8px #888888;
 }
 
+.tasks_form form div {
+  width: auto;
+}
+
+.tasks_form form {
+  display: flex;
+  flex-direction: column;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  align-items: start;
+}
+
+.form_fields {
+  display: flex;
+  flex-direction: column;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  align-items: start;
+}
+
 .tasks_table {
+  display: flex;
+  flex-wrap: wrap;
+  flex-direction: column;
   width: 70%;
+  margin-right: 20px;
   margin-left: 40px;
   background-color: azure;
   padding: 20px;
@@ -27,4 +54,59 @@
 
 .tasks_table h1 {
   color: brown;
+}
+
+@media only screen and (max-width: 850px) {
+  .tasks_form {
+    width: 28%;
+  }
+}
+
+@media only screen and (max-width: 600px) {
+  .tasks_content {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .tasks_form {
+    display: flex;
+    flex-direction: column;
+
+    margin-left: 10px;
+    width: 100%;
+    justify-content: space-between;
+    padding: 15px;
+    border-radius: 5px;
+    box-shadow: 5px 10px 8px #888888;
+  }
+
+  .tasks_form form {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    margin: 0;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    align-items: start;
+  }
+
+  .form_fields {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    align-items: start;
+  }
+
+  .tasks_table {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    background-color: azure;
+    margin-top: 20px;
+    margin-left: 10px;
+    padding: 20px;
+    border-radius: 5px;
+    box-shadow: 5px 10px 8px #888888;
+  }
 }

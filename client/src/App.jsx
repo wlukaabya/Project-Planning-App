@@ -9,11 +9,12 @@ import Tasks from "./routes/Tasks";
 import AdminSignUp from "./routes/AdminSignUp";
 import HomePage from "./routes/HomePage";
 import ContextProvider from "./context/context";
+import "./App.css";
 
 function App() {
   return (
     <ContextProvider>
-      <div>
+      <div className="app">
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<SignIn />} />
